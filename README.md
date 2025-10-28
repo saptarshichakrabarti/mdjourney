@@ -1,73 +1,147 @@
-# FAIR Metadata Automation System
+# MDJourney - FAIR Metadata Automation System
 
-A comprehensive system for automating FAIR-compliant metadata capture and management for research data. The system provides automated file processing, schema-driven metadata generation, and a modern web interface for researchers to manage their data metadata efficiently.
+Welcome to MDJourney, your automated companion for creating FAIR-compliant (Findable, Accessible, Interoperable, Reusable) research data.
 
-## Features
+MDJourney works by "watching" your data folders. Instead of forcing you to enter metadata into complex separate systems right away, it lets you work naturally in your file explorer. When you create folders or add data, MDJourney automatically generates the necessary metadata templates in the background, and the modern web interface makes it easy to provide the human-readable details when you are ready.
 
-### Core Functionality
-- **Automated Metadata Generation** - Automatic creation of FAIR-compliant metadata files
-- **Schema-Driven Validation** - Dynamic schema resolution with local override support
-- **File System Monitoring** - Real-time detection and processing of new files
-- **Version Control Integration** - Git and DVC integration for data and metadata versioning
-- **Modern Web Interface** - React-based three-pane layout for intuitive metadata management
+### Key Concepts
+- **Automation First**: The system automatically captures technical details like file sizes, formats, and checksums so you don't have to.
+- **Folder-Driven**: Your directory structure dictates the metadata structure.
+- **The `.metadata` folder**: MDJourney creates hidden `.metadata` subfolders alongside your data to store its JSON records. **Do not delete or manually edit files in this folder.**
 
-### Advanced Features
-- **Dynamic Schema Resolution** - Support for local schema overrides and packaged defaults
-- **File Upload System** - Upload files directly to datasets with automatic metadata tracking
-- **Async Processing** - High-performance asynchronous file processing
-- **Caching System** - Redis-based caching for improved performance
-- **Security Features** - Input validation, rate limiting, and authentication
-- **Docker Support** - Complete containerization for easy deployment
-- **Comprehensive Testing** - Unit, integration, and stress testing suites
+---
 
-## Quick Start
+## Getting Started with MDJourney
 
-### Prerequisites
-- Python 3.8+
-- Node.js 18+
-- Git
-- Docker (optional)
-- DVC (optional)
+This guide will walk you through setting up the system and using its core features.
 
-### Installation & Setup
+### 1. Installation
+
+First, clone the repository and run the automated installer. This handles all dependencies and creates an isolated environment for the backend.
+
+**Prerequisites:**
+- Python 3.8+ and Git
+- **Docker**: Highly recommended for the easiest setup. If you use Docker, you **do not** need to install Node.js.
+- **Node.js 18+**: *Optional.* Only needed if you run the frontend *without* Docker.
+- **DVC**: *Optional,* for data versioning.
 
 ```bash
-# Clone and setup
-git clone <repository-url>
-cd mdjourney-dev
+# Get the code
+git clone https://github.com/saptarshichakrabarti/mdjourney.git
+cd mdjourney
 
-# Install dependencies
+# Run the automated installer
 make install
-
-# Initial configuration
-make setup
 ```
 
-### Try the Decoupled Architecture (Remote backend + Local GUI)
+### 2. Configuration (Crucial First Step)
 
-Follow this recommended flow:
+You must tell MDJourney which main folder it should "watch" for your research data.
 
-1. On the remote server (e.g., HPC), run one-time setup to point the monitor to the target directory:
-   ```bash
-   make setup
-   ```
-2. Start the backend on the remote server:
+```bash
+# This creates the .fair_meta_config.yaml configuration file
+make setup
+```
+This command will prompt you to enter the **absolute path** to your data directory. This is the most important setting. The system will now monitor this path for changes.
+
+### 3. Choose Your Setup
+
+MDJourney supports two primary operational modes.
+
+#### Option A: Local Setup (All-in-One)
+Best for running everything on your personal computer.
+
+```bash
+# Start all components (monitor, API, frontend) using Docker
+make start
+```
+You can now access the **Web Interface at http://localhost:5173**.
+
+#### Option B: Decoupled Setup (Remote Server/HPC)
+**This is the recommended setup for HPC users.** The backend runs on the remote server where your data resides, and you use the web interface on your local machine.
+
+**Step 1: On the Remote Server (e.g., HPC)**
+1. Follow the **Installation** and **Configuration** steps above on the server.
+2. Start the backend services ONLY:
    ```bash
    make start-backend
    ```
-3. On your local machine, set up an SSH tunnel to the remote backend:
+   The server is now monitoring your files.
+
+**Step 2: On Your Local Machine**
+1. Open a new terminal and create a secure **SSH tunnel** to the server.
    ```bash
+   # General command format
    ssh -L 8000:localhost:8000 <username>@<server-host> -N
-   # For KU Leuven HPC compute-node case, see documentation/how-to-guides/decoupled-architecture.md
    ```
-4. Start the GUI locally in Docker:
+   *For detailed guidance, especially for multi-node HPCs, see the [Decoupled Architecture Guide](documentation/how-to-guides/decoupled-architecture.md).*
+
+2. In another terminal on your local machine (inside the cloned project folder), start the frontend GUI ONLY:
    ```bash
    make up-frontend
    ```
+You can now access the **Web Interface at http://localhost:5173** on your local machine, which is securely connected to your remote backend.
 
-For detailed guidance, see `documentation/how-to-guides/decoupled-architecture.md`.
+### 4. Core Workflow: From Data to Metadata
 
-### Development Commands
+Whether running locally or remotely, the workflow is the same. MDJourney uses folder names to understand your project structure.
+
+#### 1. Start a Project (`p_` prefix)
+Create a folder in your monitored directory starting with `p_`.
+
+- **Action:** In your file explorer, create a folder like `/path/to/data/p_MicrobiomeStudy2024`.
+- **System Response:** MDJourney detects the `p_` prefix and automatically creates the initial project metadata file.
+- **Your Task:** Open the web interface. You will see your new project. Click it to fill in high-level details (e.g., Principal Investigator, Grant Number).
+
+#### 2. Create Datasets (`d_` prefix)
+Inside a project folder, create dataset folders starting with `d_`.
+
+- **Action:** Create a subfolder like `.../p_MicrobiomeStudy2024/d_PatientCohort_A`.
+- **System Response:** The system generates administrative and structural metadata files for this new dataset.
+- **Your Task:** In the web interface, select this dataset to set details like licenses and access rights.
+
+#### 3. Add Data Files (Zero-Touch Automation)
+Simply drag and drop your data files into a dataset folder.
+
+- **Action:** Move `sequencing_run1.fastq.gz` into the `d_PatientCohort_A` folder.
+- **System Response:** MDJourney detects the file, calculates its checksum and size, and automatically adds an entry to the dataset's manifest.
+- **Your Task:** None. The file's technical metadata is now tracked automatically.
+
+#### 4. Add Contextual Details
+When you are ready to document experiment-specific details:
+
+1. Navigate to your dataset in the web interface.
+2. Click **"Create Experiment Template"**.
+3. Fill in the form with details like protocols used, instrument settings, etc., and click **Save**.
+
+#### 5. Finalize a Dataset
+When a dataset is complete and fully described:
+
+1. Ensure all required metadata fields in the UI are filled and valid (green).
+2. Click the **"Finalize Dataset"** button in the right-hand panel.
+3. **System Response:** MDJourney aggregates all related metadata into a single, comprehensive, FAIR-compliant JSON package.
+
+### Folder Structure Summary
+A well-organized project will look like this:
+```
+/ResearchData/ (Your monitored path)
+└── p_MicrobiomeStudy2024/             <-- Project Folder
+    ├── .metadata/                     <-- Auto-managed by MDJourney
+    │   └── project_descriptive.json
+    └── d_PatientCohort_A/             <-- Dataset Folder
+        ├── .metadata/                 <-- Auto-managed by MDJourney
+        │   ├── dataset_administrative.json
+        │   └── dataset_structural.json
+        └── sequencing_run1.fastq.gz   <-- Your data file
+```
+
+---
+
+## Technical Reference & Developer Information
+
+For developers and advanced users, the following sections provide detailed technical information about the system.
+
+### Makefile Commands
 
 ```bash
 # Start the complete system (monitor + API + frontend)
@@ -76,207 +150,67 @@ make start
 # Start individual components
 make start-api      # API server only
 make start-monitor  # File system monitor only
-make start-frontend # Frontend development server only
+make start-frontend # Frontend development server only (non-Docker)
+make up-frontend    # Frontend GUI only (in Docker)
+make start-backend  # API + monitor (for decoupled setup)
 
 # Testing
 make test           # Run all tests
 make test-unit      # Unit tests only
 make test-integration # Integration tests only
-make test-stress    # Stress tests only
 
 # Code quality
 make lint           # Run linters
 make format         # Format code
-make type-check     # Type checking
-
-# Build & package
-make build          # Build package
-make clean          # Clean build artifacts
 ```
 
 ### Service URLs
-
-When running the system:
+When running locally, the services are available at:
 - **Frontend**: http://localhost:5173
 - **API**: http://localhost:8000
 - **API Docs**: http://localhost:8000/docs
 
-### Basic Workflow
+### Features
+- **File Upload System**: Upload supporting files directly to datasets through the web interface.
+- **Version Control Integration**: Optional Git and DVC integration for data and metadata versioning.
+- **Dynamic Schema Resolution**: Supports local schema overrides on top of packaged defaults.
+- **Schema-Driven Validation**: Ensures metadata quality and consistency.
 
-1. **Create a project folder** with `p_` prefix
-   ```bash
-   mkdir data/p_MyResearchProject
-   ```
-
-2. **Create dataset folders** within the project with `d_` prefix
-   ```bash
-   mkdir data/p_MyResearchProject/d_dataset_RNAseq_rep1
-   ```
-
-3. **Add data files** - the system automatically detects and processes them
-
-4. **Access the web interface** at http://localhost:5173 to view and edit metadata
-
-### Configuration
-
-The system uses a `.fair_meta_config.yaml` file for configuration. Run `make setup` to create this file.
-
-## Architecture
-
-### System Components
-
-- **Backend API** (`api/`) - FastAPI-based REST API with comprehensive endpoints
-- **Application Services** (`app/`) - Core business logic and services
-- **Frontend** (`frontend/`) - React-based web interface with TypeScript
-- **File Monitor** - Real-time file system monitoring and processing
-- **Schema Management** - Dynamic schema resolution and validation
+### Architecture
+- **Backend API** (`api/`): A FastAPI-based REST API.
+- **Application Services** (`app/`): Core business logic.
+- **Frontend** (`frontend/`): A React and TypeScript web interface.
+- **File Monitor**: A service for real-time file system monitoring.
+- **Schema Management**: Handles dynamic schema resolution and validation.
 
 ### Key Technologies
+- **Backend**: FastAPI, Pydantic, SQLAlchemy, Redis, Celery
+- **Frontend**: React 18, TypeScript, Material-UI, TanStack Query, Zustand, Vite
+- **Infrastructure**: Docker, Nginx, Git/DVC
 
-**Backend**:
-- FastAPI for high-performance API
-- Pydantic for data validation
-- SQLAlchemy for database operations
-- Redis for caching
-- Celery for background tasks
+### Documentation
+Comprehensive documentation is available in the `documentation/` directory, including:
+- **System Architecture**: Detailed design and implementation.
+- **How-to Guides**: For configuration, Docker, testing, and contributing.
+- **Reference**: API Endpoints and a Codebase Glossary.
 
-**Frontend**:
-- React 18 with TypeScript
-- Material-UI for components
-- TanStack Query for server state
-- Zustand for client state
-- Vite for fast builds
+### API Reference
+The system provides a comprehensive REST API. Key endpoints include:
+- `GET /api/v1/projects`: List all projects.
+- `GET /api/v1/projects/{project_id}/datasets`: List datasets in a project.
+- `PUT /api/v1/datasets/{dataset_id}/metadata/{metadata_type}`: Update metadata.
+- `POST /api/v1/datasets/{dataset_id}/finalize`: Finalize a dataset.
+- `GET /api/v1/health`: Health check for the API.
 
-**Infrastructure**:
-- Docker for containerization
-- Nginx for load balancing
-- Redis for caching and sessions
-- Git/DVC for version control
+### Deployment with Docker
+- **Production**: `make build-docker` then `make up`
+- **Development**: `make build-dev` then `make up-dev`
 
-## Documentation
+### Security & Performance
+The system is optimized for performance and includes security features such as input validation, path traversal protection, rate limiting, and optional authentication. Performance is enhanced through asynchronous processing, a Redis-based caching layer, and frontend optimizations.
 
-Comprehensive documentation is available in the `documentation/` directory:
+### Contributing
+We welcome contributions! Please see our [Contributing Guide](documentation/how-to-guides/contributing.md) for details on the development setup, coding standards, and pull request process.
 
-### Explanation
-- **[System Architecture](documentation/explanation/system-architecture.md)** - Detailed system design and implementation
-- **[Frontend Architecture](documentation/explanation/frontend-architecture.md)** - Frontend component architecture and patterns
-- **[System Workflow](documentation/explanation/system-workflow.md)** - Complete workflow diagrams and processes
-- **[Schema Resolution](documentation/explanation/schema-resolution.md)** - Dynamic schema resolution mechanism
-
-### How-to Guides
-- **[Configuration Management](documentation/how-to-guides/configuration-management.md)** - Comprehensive configuration guide
-- **[Using Docker](documentation/how-to-guides/using-docker.md)** - Docker setup and deployment
-- **[Testing the Codebase](documentation/how-to-guides/testing-the-codebase.md)** - Complete testing guide
-- **[Contributing](documentation/how-to-guides/contributing.md)** - Development and contribution guidelines
-- **[Performance Optimizations](documentation/how-to-guides/performance-optimizations.md)** - Performance tuning and optimization
-
-### Reference
-- **[API Endpoints](documentation/reference/api-endpoints.md)** - Complete API reference documentation
-- **[Codebase Glossary](documentation/reference/codebase_glossary.md)** - Comprehensive component and concept reference
-
-## API Reference
-
-The system provides a comprehensive REST API with the following main endpoint categories:
-
-### Discovery Endpoints
-- `GET /api/v1/projects` - List all projects
-- `GET /api/v1/projects/{project_id}/datasets` - List project datasets
-- `POST /api/v1/rescan` - Trigger system rescan
-
-### Schema Endpoints
-- `GET /api/v1/schemas/contextual` - List contextual schemas
-- `GET /api/v1/schemas/{schema_type}/{schema_id}` - Get specific schema
-
-### Metadata Endpoints
-- `GET /api/v1/datasets/{dataset_id}/metadata/{metadata_type}` - Get metadata
-- `PUT /api/v1/datasets/{dataset_id}/metadata/{metadata_type}` - Update metadata
-
-### Experiment Workflow
-- `POST /api/v1/datasets/{dataset_id}/contextual` - Create contextual template
-- `POST /api/v1/datasets/{dataset_id}/finalize` - Finalize dataset
-
-### System Endpoints
-- `GET /api/v1/health` - Health check
-- `POST /api/v1/config/reload` - Reload configuration
-
-## Testing
-
-The system includes comprehensive testing at multiple levels:
-
-### Test Types
-- **Unit Tests** - Individual component testing with 90% coverage requirement
-- **Integration Tests** - API and system integration testing
-- **Regression Tests** - Stability and compatibility testing
-- **Stress Tests** - Performance and load testing
-
-### Running Tests
-```bash
-# Run all tests
-make test
-
-# Run specific test types
-make test-unit
-make test-integration
-make test-stress
-
-# Run with coverage
-make test-coverage
-```
-
-## Deployment
-
-### Docker Deployment
-
-**Production**:
-```bash
-make build-docker
-make up
-```
-
-**Development**:
-```bash
-make build-dev
-make up-dev
-```
-
-### Environment Configuration
-
-The system supports multiple deployment environments:
-- **Development** - Hot reloading and debug features
-- **Staging** - Production-like testing environment
-- **Production** - Optimized for performance and security
-
-## Security Features
-
-- **Input Validation** - Comprehensive input sanitization
-- **Path Traversal Protection** - Security against directory traversal attacks
-- **Rate Limiting** - API abuse prevention
-- **Authentication** - Optional API key authentication
-- **Authorization** - Role-based access control
-- **Security Headers** - HTTP security headers
-
-## Performance
-
-The system is optimized for high performance:
-- **Async Processing** - Non-blocking file processing
-- **Caching** - Redis-based caching for improved response times
-- **Connection Pooling** - Database connection optimization
-- **Code Splitting** - Frontend bundle optimization
-- **Compression** - Response compression for reduced bandwidth
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](documentation/how-to-guides/contributing.md) for:
-- Development setup
-- Coding standards
-- Testing requirements
-- Pull request process
-- Code review guidelines
-
-## Support
-
-For detailed information, see the [Codebase Glossary](documentation/reference/codebase_glossary.md) and the [Contributing Guide](documentation/how-to-guides/contributing.md).
-
-## License
-
+### License
 This project is licensed under the MIT License - see the LICENSE file for details.
