@@ -1,0 +1,141 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Experiment Contextual Metadata Schema",
+  "description": "Dynamic details of the specific experimental run(s) generating the data.",
+  "type": "object",
+  "properties": {
+    "experiment_template_type": {
+      "type": "string",
+      "description": "Name/ID of the contextual schema template used to create this record. System-defined.",
+      "const": "system_default",
+      "readOnly": true
+    },
+    "experiment_identifier_run_id": {
+      "type": "string",
+      "description": "Unique identifier for this specific experimental procedure or computational analysis run. Auto-generated GUID/UUID.",
+      "readOnly": true
+    },
+    "experiment_name": {
+      "type": "string",
+      "description": "User-provided, human-readable name/title for this experiment run."
+    },
+    "experiment_dates": {
+      "type": "array",
+      "description": "Date(s) on which this specific experiment or analysis was performed.",
+      "items": { "type": "string", "format": "date" }
+    },
+    "experimenters": {
+      "type": "array",
+      "description": "Name, ORCID of the person(s) who conducted or executed this specific run.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "orcid": { "type": "string", "format": "uri", "pattern": "^https://orcid.org/[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]$" }
+        },
+        "required": ["name"]
+      }
+    },
+    "dataset_identifier_link": {
+      "type": "string",
+      "description": "Reference to the Dataset Identifier (DOI/Handle) (in Structural Metadata) that this run's data contributes to."
+    },
+    "protocol_references": {
+      "type": "array",
+      "description": "Link (e.g., DOI from protocols.io) or identifier (e.g., SOP number) for the detailed step-by-step protocol(s) used.",
+      "items": { "type": "string" }
+    },
+    "protocol_deviations": {
+      "type": "string",
+      "description": "Description of any variations or deviations from the standard protocol referenced above during this specific run."
+    },
+    "unique_sample_batch_identifiers": {
+      "type": "array",
+      "description": "Identifier(s) for the specific biological/chemical samples, libraries, or batches processed in this run. (Link to LIMS/ELN).",
+      "items": { "type": "string" }
+    },
+    "sample_source_description": {
+      "type": "string",
+      "description": "Details of the biological source for samples in this run (e.g., Organism, Cell Line, Tissue, Strain, Genotype)."
+    },
+    "sample_treatment_conditions": {
+      "type": "string",
+      "description": "Specific treatments, perturbations, or experimental conditions applied to the samples in this run. Required if applicable."
+    },
+    "sample_preparation_details": {
+      "type": "string",
+      "description": "Key steps or reagents used for preparing the specific samples/libraries in this run (e.g., kit name, lot number). Required if applicable."
+    },
+    "instrument_used_link": {
+      "type": "array",
+      "description": "Reference(s) to the Instrument Unique Identifier(s) (in Technical Metadata) for the specific instrument(s) used in this run.",
+      "items": { "type": "string" }
+    },
+    "instrument_settings_run_parameters": {
+      "type": "object",
+      "description": "Run-specific settings and parameters used on the instrument(s) (e.g., Laser power, exposure time, cycle number, gradient).",
+      "additionalProperties": true
+    },
+    "software_used_acquisition_analysis": {
+      "type": "array",
+      "description": "Name and specific version(s) of software used for data acquisition or primary processing/analysis in this run.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "version": { "type": "string" }
+        },
+        "required": ["name", "version"]
+      }
+    },
+    "software_parameters_script_used": {
+      "type": "string",
+      "description": "Key non-default parameters, configuration file(s), or link/reference to the specific script(s) used for this run."
+    },
+    "reagent_kit_details": {
+      "type": "array",
+      "description": "Manufacturer, Catalog Number, Lot Number, Expiry Date for critical reagents or kits used in this run.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "manufacturer": { "type": "string" },
+          "catalog_number": { "type": "string" },
+          "lot_number": { "type": "string" },
+          "expiry_date": { "type": "string", "format": "date" }
+        },
+        "required": ["manufacturer", "catalog_number", "lot_number"]
+      }
+    },
+    "quality_control_metrics": {
+      "type": "object",
+      "description": "Key quantitative or qualitative results from QC checks performed for this run (e.g., RIN, Read Counts, Purity).",
+      "additionalProperties": true
+    },
+    "qc_assessment": {
+      "type": "string",
+      "description": "Overall assessment of the run's quality based on QC metrics.",
+      "enum": ["Pass", "Fail", "Review", "Warning"]
+    },
+    "links_to_raw_data_files": {
+      "type": "array",
+      "description": "URI(s) or path(s) to the primary, unprocessed data file(s) generated directly by this run.",
+      "items": { "type": "string", "format": "uri" }
+    },
+    "experimenter_notes_observations": {
+      "type": "string",
+      "description": "Any free-text notes, observations, or unusual events recorded by the experimenter during this run."
+    },
+    "created_by": { "type": "string", "description": "User or system that created this metadata record." },
+    "created_date": { "type": "string", "format": "date-time", "description": "UTC timestamp of record creation." },
+    "last_modified_by": { "type": "string", "description": "User or system that last modified this metadata record." },
+    "last_modified_date": { "type": "string", "format": "date-time", "description": "UTC timestamp of last modification." }
+  },
+  "required": [
+    "experiment_template_type",
+    "experiment_identifier_run_id",
+    "created_by",
+    "created_date",
+    "last_modified_by",
+    "last_modified_date"
+  ]
+}

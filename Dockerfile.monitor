@@ -1,0 +1,37 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    procps \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install DVC
+RUN pip install dvc
+
+# Copy requirements and install Python dependencies
+COPY pyproject.toml .
+RUN pip install --no-cache-dir -e .
+
+# Copy application code
+COPY app/ ./app/
+COPY scripts/ ./scripts/
+COPY packaged_schemas/ ./packaged_schemas/
+
+# Copy Docker configuration
+COPY .fair_meta_config.docker.yaml ./.fair_meta_config.yaml
+
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash app \
+    && chown -R app:app /app
+USER app
+
+# Health check: ensure folder monitor process is running
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD pgrep -f "app.monitors.folder_monitor" || exit 1
+
+# Start the monitor module
+CMD ["python", "-m", "app.monitors.folder_monitor", "--path", "/app/monitor"]

@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Dataset Administrative Metadata Schema",
+  "description": "Governs the dataset's lifecycle, access, rights, and compliance. Inherits defaults from project-level administrative metadata.",
+  "type": "object",
+  "properties": {
+    "dataset_identifier_link": {
+      "type": "string",
+      "description": "Reference to the unique Dataset Identifier (DOI/Handle) defined in the Structural Metadata schema."
+    },
+    "data_steward_contact_person": {
+      "type": "object",
+      "description": "Name, ORCID, Email of the individual responsible for managing or answering questions about this dataset. Inherits from project-level administrative metadata by default.",
+      "properties": {
+        "name": { "type": "string" },
+        "orcid": { "type": "string", "format": "uri", "pattern": "^https://orcid.org/[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]$" },
+        "email": { "type": "string", "format": "email" }
+      },
+      "required": ["name", "email"]
+    },
+    "date_published_released": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the dataset (or specific version) was made publicly available or released under specific terms."
+    },
+    "license": {
+      "type": "string",
+      "description": "Specifies the permissions granted for reuse of the dataset (e.g., CC-BY 4.0, MIT, ODC-By). If not provided, inherits from project-level administrative metadata."
+    },
+    "access_level": {
+      "type": "string",
+      "description": "Defines who can access the data. If not provided, inherits from project-level administrative metadata.",
+      "enum": ["Public", "Embargoed", "Restricted", "Confidential"]
+    },
+    "access_conditions_contact": {
+      "type": "string",
+      "description": "Instructions on how to request access, or specific conditions required for use. If not provided, inherits from project-level administrative metadata."
+    },
+    "embargo_end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when the data access restrictions are lifted. If not provided, inherits from project-level administrative metadata."
+    },
+    "ethics_approval_references": {
+      "type": "array",
+      "description": "Identifier(s) for Institutional Review Board (IRB) or Animal Care (IACUC) approvals relevant to this data. If not provided, inherits from project-level administrative metadata.",
+      "items": { "type": "string" }
+    },
+    "consent_framework_summary": {
+      "type": "string",
+      "description": "Description of the consent obtained from human subjects for data collection and use. If not provided, inherits from project-level administrative metadata."
+    },
+    "data_sensitivity_classification": {
+      "type": "string",
+      "description": "Classification based on content. If not provided, inherits from project-level administrative metadata.",
+      "enum": ["Public", "Internal Use Only", "Confidential", "PII/PHI"]
+    },
+    "anonymization_method": {
+      "type": "string",
+      "description": "Description of the methods used to de-identify or anonymize the data, if applicable. If not provided, inherits from project-level administrative metadata."
+    },
+    "data_retention_schedule": {
+      "type": "string",
+      "description": "Policy or date defining how long the data will be actively managed and/or archived. If not provided, inherits from project-level administrative metadata."
+    },
+    "recommended_citation": {
+      "type": "string",
+      "description": "The preferred format for citing this specific dataset when used in other works. If not provided, uses project-level citation template."
+    },
+    "link_to_documentation": {
+      "type": "string",
+      "format": "uri",
+      "description": "URI or path to essential documentation (e.g., README file, user guide) needed to understand/use the data. If not provided, inherits from project-level administrative metadata."
+    },
+    "preservation_location": {
+      "type": "string",
+      "description": "Name or identifier of the intended long-term archive or repository for this dataset. If not provided, inherits from project-level administrative metadata."
+    },
+    "created_by": { "type": "string", "description": "User or system that created this metadata record." },
+    "created_date": { "type": "string", "format": "date-time", "description": "UTC timestamp of record creation." },
+    "last_modified_by": { "type": "string", "description": "User or system that last modified this metadata record." },
+    "last_modified_date": { "type": "string", "format": "date-time", "description": "UTC timestamp of last modification." }
+  },
+  "required": [
+    "dataset_identifier_link",
+    "created_by",
+    "created_date",
+    "last_modified_by",
+    "last_modified_date"
+  ],
+  "allOf": [
+    {
+      "if": { "properties": { "access_level": { "const": "Restricted" } } },
+      "then": { "required": ["access_conditions_contact"] }
+    },
+    {
+      "if": { "properties": { "access_level": { "const": "Embargoed" } } },
+      "then": { "required": ["embargo_end_date"] }
+    },
+    {
+      "if": { "properties": { "data_sensitivity_classification": { "enum": ["Confidential", "PII/PHI"] } } },
+      "then": { "required": ["anonymization_method"] }
+    }
+  ]
+}

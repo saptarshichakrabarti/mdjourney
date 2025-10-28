@@ -1,0 +1,201 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AnnData/MuData Object Metadata",
+  "description": "A template for contextual metadata for AnnData and MuData objects, commonly used in single-cell and multi-omics analysis.",
+  "type": "object",
+  "properties": {
+    "experiment_template_type": {
+      "type": "string",
+      "description": "Template used to create this contextual record.",
+      "const": "anndata_mudata_object",
+      "readOnly": true
+    },
+    "experiment_identifier_run_id": {
+      "type": "string",
+      "description": "System-generated UUID for this AnnData/MuData object.",
+      "readOnly": true
+    },
+    "experiment_title": {
+      "type": "string",
+      "description": "A descriptive title for the experiment or dataset contained in the object."
+    },
+    "experiment_description": {
+      "type": "string",
+      "description": "A summary of the experiment, its goals, and its design."
+    },
+    "data_source": {
+      "type": "object",
+      "properties": {
+        "source_organism": {
+          "type": "string",
+          "description": "The organism from which the samples were derived (e.g., Homo sapiens, Mus musculus)."
+        },
+        "source_tissue": {
+          "type": "string",
+          "description": "The tissue or organ of origin for the samples."
+        },
+        "sample_preparation_method": {
+          "type": "string",
+          "description": "A brief description of how the biological samples were prepared."
+        },
+        "sequencing_experiment_ids": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "A list of identifiers for any associated sequencing run experiments."
+        },
+        "data_repository_links": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Links to raw data in public repositories (e.g., GEO, SRA, ArrayExpress)."
+        }
+      }
+    },
+    "object_type": {
+      "type": "string",
+      "description": "The type of data object.",
+      "enum": ["AnnData", "MuData"]
+    },
+    "number_of_observations": {
+      "type": "integer",
+      "description": "Total number of observations (typically cells) in the object."
+    },
+    "number_of_variables": {
+      "type": "integer",
+      "description": "Total number of variables (e.g., genes, peaks) in the object."
+    },
+    "observation_annotations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "A list of metadata keys stored in the .obs dataframe, annotating the observations."
+    },
+    "variable_annotations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "A list of metadata keys stored in the .var dataframe, annotating the variables."
+    },
+    "unstructured_annotations": {
+        "type": "array",
+        "items": {
+            "type": "string"
+        },
+        "description": "A list of keys for unstructured metadata stored in the .uns dictionary."
+    },
+    "data_layers": {
+        "type": "array",
+        "items": {
+            "type": "string"
+        },
+        "description": "Names of additional data layers stored in the object (e.g., 'raw_counts', 'normalized_data')."
+    },
+    "modality_information": {
+      "type": "array",
+      "description": "Details for each modality, particularly for MuData objects. For AnnData, this would be a single-element array.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "modality_name": {
+            "type": "string",
+            "description": "Name of the modality (e.g., 'RNA', 'ATAC', 'ADT')."
+          },
+          "modality_type": {
+            "type": "string",
+            "description": "The biological type of data measured (e.g., 'gene expression', 'chromatin accessibility', 'protein expression')."
+          },
+          "number_of_modality_observations": {
+            "type": "integer",
+            "description": "Number of observations in this specific modality."
+          },
+          "number_of_modality_variables": {
+            "type": "integer",
+            "description": "Number of variables in this specific modality."
+          },
+          "assay_protocol": {
+            "type": "string",
+            "description": "The experimental protocol used to generate this modality's data (e.g., '10x Genomics 3' v3', 'sci-ATAC-seq')."
+          },
+          "feature_type": {
+              "type": "string",
+              "description": "The type of features measured (e.g., 'Gene', 'Peak', 'Antibody')."
+          },
+          "feature_reference": {
+            "type": "string",
+            "description": "The reference genome or feature set used for annotation (e.g., 'GRCh38', 'mm10', 'GENCODE v40')."
+          }
+        },
+        "required": ["modality_name", "modality_type", "number_of_modality_observations", "number_of_modality_variables"]
+      }
+    },
+    "data_processing_summary": {
+      "type": "object",
+      "properties": {
+        "processing_software": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of primary software and versions used for data processing (e.g., 'Scanpy 1.9.1', 'Seurat 4.1.0', 'Cell Ranger 6.0')."
+        },
+        "processing_workflow_description": {
+          "type": "string",
+          "description": "A high-level summary of the computational workflow, including key steps like filtering, normalization, and integration."
+        },
+        "normalization_method": {
+          "type": "string",
+          "description": "The method used for data normalization (e.g., 'LogNormalize', 'SCTransform', 'TF-IDF')."
+        },
+        "dimensionality_reduction_methods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of dimensionality reduction techniques applied and stored in the object (e.g., 'PCA', 'UMAP', 't-SNE')."
+        },
+        "clustering_methods": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Clustering algorithms used to define cell populations (e.g., 'Leiden', 'Louvain')."
+        },
+        "integration_method": {
+            "type": "string",
+            "description": "If applicable, the method used to integrate multiple datasets or modalities (e.g., 'Harmony', 'CCA', 'WNN')."
+        }
+      }
+    },
+    "created_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The date and time when the AnnData/MuData object was created."
+    },
+    "researcher": {
+      "type": "string",
+      "description": "Name of the researcher or group that generated the data object."
+    },
+    "contact_information": {
+      "type": "string",
+      "description": "Contact information (e.g., email) for the creator or a corresponding author."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the experiment or dataset."
+    }
+  },
+  "required": [
+    "experiment_template_type",
+    "experiment_identifier_run_id",
+    "experiment_title",
+    "created_date",
+    "object_type",
+    "number_of_observations",
+    "number_of_variables"
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Genomics Sequencing Run",
+  "description": "Contextual metadata for genomics sequencing experiments",
+  "type": "object",
+  "properties": {
+    "experiment_template_type": {
+      "type": "string",
+      "description": "Template used to create this contextual record.",
+      "const": "genomics_sequencing",
+      "readOnly": true
+    },
+    "experiment_identifier_run_id": {
+      "type": "string",
+      "description": "System-generated UUID for this run.",
+      "readOnly": true
+    },
+    "experiment_title": {
+      "type": "string",
+      "description": "Title of the sequencing experiment"
+    },
+    "sequencing_platform": {
+      "type": "string",
+      "description": "Sequencing platform used (e.g., Illumina, PacBio, Oxford Nanopore)",
+      "enum": ["Illumina", "PacBio", "Oxford Nanopore", "Other"]
+    },
+    "sequencing_type": {
+      "type": "string",
+      "description": "Type of sequencing performed",
+      "enum": ["Whole Genome", "Exome", "RNA-Seq", "ChIP-Seq", "Other"]
+    },
+    "read_length": {
+      "type": "integer",
+      "description": "Read length in base pairs"
+    },
+    "coverage": {
+      "type": "number",
+      "description": "Sequencing coverage (X)"
+    },
+    "sample_count": {
+      "type": "integer",
+      "description": "Number of samples sequenced"
+    },
+    "library_preparation": {
+      "type": "string",
+      "description": "Library preparation method used"
+    },
+    "quality_control": {
+      "type": "object",
+      "properties": {
+        "fastqc_passed": {
+          "type": "boolean",
+          "description": "Whether FastQC quality control passed"
+        },
+        "adapter_trimming": {
+          "type": "boolean",
+          "description": "Whether adapter trimming was performed"
+        },
+        "quality_threshold": {
+          "type": "integer",
+          "description": "Quality score threshold used"
+        }
+      }
+    },
+    "created_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time when the experiment was created"
+    },
+    "researcher": {
+      "type": "string",
+      "description": "Name of the researcher conducting the experiment"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the experiment"
+    }
+  },
+  "required": [
+    "experiment_template_type",
+    "experiment_identifier_run_id",
+    "experiment_title",
+    "sequencing_platform",
+    "sequencing_type",
+    "created_date"
+  ]
+}

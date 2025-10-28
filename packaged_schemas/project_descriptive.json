@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Project Descriptive Metadata Schema",
+  "description": "Defines high-level project context, reusable for all datasets originating from this project.",
+  "type": "object",
+  "properties": {
+    "project_identifier": {
+      "type": "string",
+      "description": "Unique ID for the overall research project (e.g., grant number, internal lab ID). Auto-generated GUID/UUID."
+    },
+    "project_title": {
+      "type": "string",
+      "description": "Formal title of the overarching research project."
+    },
+    "project_description": {
+      "type": "string",
+      "description": "Brief summary/abstract of the project's goals, scope, and scientific question(s)."
+    },
+    "principal_investigator": {
+      "type": "object",
+      "description": "Name, ORCID, Email, Affiliation of the lead researcher for the project/PhD student",
+      "properties": {
+        "name": { "type": "string" },
+        "orcid": { "type": "string", "format": "uri", "pattern": "^https://orcid.org/[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]$" },
+        "email": { "type": "string", "format": "email" },
+        "affiliation": { "type": "string" }
+      },
+      "required": ["name", "orcid", "email", "affiliation"]
+    },
+    "contributing_researchers": {
+      "type": "array",
+      "description": "List of contributing researchers.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "role": { "type": "string" },
+          "orcid": { "type": "string", "format": "uri", "pattern": "^https://orcid.org/[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]$" },
+          "affiliation": { "type": "string" }
+        },
+        "required": ["name", "role"]
+      }
+    },
+    "funding_sources": {
+      "type": "array",
+      "description": "Funder name(s) and Grant ID(s) or award numbers supporting the project.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "funder_name": { "type": "string" },
+          "grant_id": { "type": "string" }
+        },
+        "required": ["funder_name", "grant_id"]
+      }
+    },
+    "originating_institution": {
+      "type": "string",
+      "description": "Primary institution where the project research is conducted (e.g., University name)."
+    },
+    "originating_laboratory": {
+      "type": "string",
+      "description": "Specific lab name or group identifier within the institution."
+    },
+    "data_collection_method_summary": {
+      "type": "string",
+      "description": "High-level overview of the main types of data generated/methods used (e.g., Genomics, Microscopy, Proteomics, Surveys)."
+    },
+    "project_data_storage_strategy": {
+      "type": "string",
+      "description": "General description of planned primary storage locations/approach for project data."
+    },
+    "project_timeline_summary": {
+      "type": "string",
+      "description": "Key project milestones, overall start/end dates, or duration."
+    },
+    "project_keywords": {
+      "type": "array",
+      "description": "Keywords describing the project's broad subject area, methods, or focus for searchability.",
+      "items": { "type": "string" }
+    },
+    "project_status": {
+      "type": "string",
+      "description": "Current status of the project.",
+      "enum": ["Planning", "Active", "Completed", "On Hold"]
+    },
+    "created_by": { "type": "string", "description": "User or system that created this metadata record." },
+    "created_date": { "type": "string", "format": "date-time", "description": "UTC timestamp of record creation." },
+    "last_modified_by": { "type": "string", "description": "User or system that last modified this metadata record." },
+    "last_modified_date": { "type": "string", "format": "date-time", "description": "UTC timestamp of last modification." }
+  },
+  "required": [
+    "project_identifier",
+    "project_title",
+    "created_by",
+    "created_date",
+    "last_modified_by",
+    "last_modified_date"
+  ]
+}

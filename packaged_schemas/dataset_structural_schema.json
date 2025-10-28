@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Dataset Structural Metadata Schema",
+  "description": "Uniquely identifies the dataset, describes its scope, constituent files, format, organization, and variables. Links to the parent project.",
+  "type": "object",
+  "properties": {
+    "dataset_identifier": {
+      "type": "string",
+      "description": "Persistent, globally unique identifier for this specific dataset (e.g., DOI, Handle). Primary Key. Auto-generated GUID/UUID."
+    },
+    "dataset_title": {
+      "type": "string",
+      "description": "A concise, human-readable title specific to this dataset."
+    },
+    "dataset_abstract_description": {
+      "type": "string",
+      "description": "A summary describing the content, scope, and purpose of this dataset."
+    },
+    "dataset_version": {
+      "type": "string",
+      "description": "Version number or identifier for this iteration of the dataset (e.g., 1.0, 2.1, YYYYMMDD)."
+    },
+    "dataset_type": {
+      "type": "string",
+      "description": "Category describing the nature of the data (e.g., Genomics, Proteomics, Imaging, Simulation, Tabular)."
+    },
+    "dataset_keywords": {
+      "type": "array",
+      "description": "Specific keywords describing the content or methods of this dataset for fine-grained discovery.",
+      "items": { "type": "string" }
+    },
+    "associated_project_identifier": {
+      "type": "string",
+      "description": "Links this dataset record back to the Project Identifier in the Descriptive Metadata schema."
+    },
+    "date_created": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the first version of this dataset was generated or formally compiled."
+    },
+    "related_publications": {
+      "type": "array",
+      "description": "DOI(s) or full citation(s) for publications that are based on or describe this dataset.",
+      "items": { "type": "string" }
+    },
+    "file_descriptions": {
+      "type": "array",
+      "description": "List of files or file patterns included in the dataset, with their embedded File Technical Metadata.",
+      "items": {
+        "type": "object",
+        "description": "Details for a single file, including its technical metadata.",
+        "properties": {
+          "file_name": { "type": "string", "description": "The name of the file." },
+          "role": { "type": "string", "description": "The role of the file (e.g., 'raw_data', 'processed_results', 'metadata', 'uploaded_file')." },
+          "file_path": { "type": "string", "description": "Relative path to the location of the data file." },
+          "file_description": { "type": "string", "description": "User-provided description or comment about the file's content or purpose." },
+          "file_extension": { "type": "string", "description": "File extension (e.g., ipynb, csv, tif). From dirmeta." },
+          "file_size_bytes": { "type": "integer", "minimum": 0, "description": "Size of the file in bytes. From dirmeta." },
+          "checksum": { "type": "string", "description": "Cryptographic hash (e.g., MD5, SHA-256) and algorithm used, to verify file integrity." },
+          "checksum_algorithm": { "type": "string", "description": "The algorithm used for the checksum (e.g., 'SHA256')." },
+          "file_type_os": { "type": "string", "description": "File system object type (e.g., 'file', 'folder'). From dirmeta." },
+          "file_permissions": { "type": "string", "description": "File system permissions string (e.g., '-rw-r--r--'). From dirmeta." },
+          "file_accessed_utc": { "type": "string", "format": "date-time", "description": "Last access timestamp (UTC). From dirmeta." },
+          "file_created_utc": { "type": "string", "format": "date-time", "description": "File creation timestamp (UTC). From dirmeta." },
+          "file_modified_utc": { "type": "string", "format": "date-time", "description": "Last modification timestamp (UTC). From dirmeta." },
+          "file_metadata_changed_utc": { "type": "string", "format": "date-time", "description": "File metadata change timestamp (UTC). From dirmeta." },
+          "data_format_standard": { "type": "string", "description": "Specific data format standard (e.g., OME-TIFF, FASTQ, HDF5)." },
+          "mime_type": { "type": "string", "description": "MIME type of the file." },
+          "encoding": { "type": "string", "description": "Character encoding for text files." },
+          "dimensions": { "type": "string", "description": "For image data: e.g., '2048x2048x10 (XYZ)'." },
+          "bit_depth": { "type": "string", "description": "For image/numeric data: e.g., '16-bit'." },
+          "number_of_records": { "type": "integer", "description": "Number of records/rows for tabular data." },
+          "channels": { "type": "array", "items": { "type": "string" }, "description": "List of channels for imaging data (e.g., 'DAPI', 'GFP')." },
+          "acquisition_software": { "type": "string", "description": "Name and version of software that created this specific file." }
+        },
+        "required": [
+          "file_name", "role", "file_path", "file_extension", "file_size_bytes",
+          "file_created_utc", "file_modified_utc", "file_type_os"
+        ]
+      },
+      "minItems": 0
+    },
+    "data_structure_description": {
+      "type": "string",
+      "description": "Overview of how the data is organized within the files (e.g., Tabular, Relational, Image Stack, Key-Value)."
+    },
+    "link_to_data_dictionary": {
+      "type": "string",
+      "format": "uri",
+      "description": "URI or path to a separate file defining variables/columns, units, data types, allowed values, missing value codes."
+    },
+    "data_compression_method": {
+      "type": "string",
+      "description": "Method used to compress files, if any (e.g., gzip, zip, bzip2, none)."
+    },
+    "software_to_read_access_data": {
+      "type": "array",
+      "description": "Names and versions of key software or libraries recommended/required to open or correctly interpret the data files.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "version": { "type": "string" }
+        },
+        "required": ["name"]
+      }
+    },
+    "created_by": { "type": "string", "description": "User or system that created this metadata record." },
+    "created_date": { "type": "string", "format": "date-time", "description": "UTC timestamp of record creation." },
+    "last_modified_by": { "type": "string", "description": "User or system that last modified this metadata record." },
+    "last_modified_date": { "type": "string", "format": "date-time", "description": "UTC timestamp of last modification." }
+  },
+  "required": [
+    "dataset_identifier",
+    "dataset_title",
+    "associated_project_identifier",
+    "created_by",
+    "created_date",
+    "last_modified_by",
+    "last_modified_date"
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Instrument Technical Metadata Schema",
+  "description": "Static, reusable specifications for instruments.",
+  "type": "object",
+  "properties": {
+    "instrument_unique_identifier": {
+      "type": "string",
+      "description": "Lab-specific asset tag or unique identifier for the physical piece of equipment. Instrument Primary Key."
+    },
+    "instrument_type": {
+      "type": "string",
+      "description": "General category of the instrument (e.g., Confocal Microscope, DNA Sequencer, Mass Spectrometer, Flow Cytometer)."
+    },
+    "instrument_manufacturer": {
+      "type": "string",
+      "description": "Name of the company that manufactured the instrument."
+    },
+    "instrument_model": {
+      "type": "string",
+      "description": "Specific model name or number provided by the manufacturer."
+    },
+    "serial_number": {
+      "type": "string",
+      "description": "Manufacturer's unique serial number for the specific instrument unit."
+    },
+    "key_hardware_specifications": {
+      "type": "array",
+      "description": "Critical, relatively static hardware details (e.g., Available lasers/filters, camera type, mass analyzer type).",
+      "items": { "type": "string" }
+    },
+    "core_software_firmware_version": {
+      "type": "string",
+      "description": "Version of the instrument's primary operating system or control software (if relatively static)."
+    },
+    "location": {
+      "type": "string",
+      "description": "Physical location of the instrument (e.g., Building, Room Number, Bench)."
+    },
+    "link_to_calibration_maintenance_log": {
+      "type": "string",
+      "format": "uri",
+      "description": "URI or path to records of standard calibration procedures and maintenance history (not run-specific settings)."
+    },
+    "date_acquired_installed": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the instrument was acquired or put into service in the lab."
+    },
+    "created_by": { "type": "string", "description": "User or system that created this metadata record." },
+    "created_date": { "type": "string", "format": "date-time", "description": "UTC timestamp of record creation." },
+    "last_modified_by": { "type": "string", "description": "User or system that last modified this metadata record." },
+    "last_modified_date": { "type": "string", "format": "date-time", "description": "UTC timestamp of last modification." }
+  },
+  "required": [
+    "instrument_unique_identifier",
+    "instrument_type",
+    "instrument_manufacturer",
+    "instrument_model",
+    "key_hardware_specifications",
+    "created_by",
+    "created_date",
+    "last_modified_by",
+    "last_modified_date"
+  ]
+}

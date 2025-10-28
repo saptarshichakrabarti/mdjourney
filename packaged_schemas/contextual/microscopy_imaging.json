@@ -1,0 +1,133 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Microscopy Imaging Session",
+  "description": "Contextual metadata for microscopy imaging experiments",
+  "type": "object",
+  "properties": {
+    "experiment_template_type": {
+      "type": "string",
+      "description": "Template used to create this contextual record.",
+      "const": "microscopy_imaging",
+      "readOnly": true
+    },
+    "experiment_identifier_run_id": {
+      "type": "string",
+      "description": "System-generated UUID for this run.",
+      "readOnly": true
+    },
+    "experiment_title": {
+      "type": "string",
+      "description": "Title of the imaging experiment"
+    },
+    "microscope_type": {
+      "type": "string",
+      "description": "Type of microscope used",
+      "enum": ["Confocal", "Fluorescence", "Electron", "Phase Contrast", "Bright Field", "Other"]
+    },
+    "imaging_modality": {
+      "type": "string",
+      "description": "Imaging modality or technique",
+      "enum": ["2D", "3D", "Time-lapse", "Z-stack", "Live cell", "Fixed", "Other"]
+    },
+    "objective_magnification": {
+      "type": "number",
+      "description": "Objective magnification (e.g., 10x, 40x, 100x)"
+    },
+    "numerical_aperture": {
+      "type": "number",
+      "description": "Numerical aperture of the objective"
+    },
+    "pixel_size": {
+      "type": "number",
+      "description": "Pixel size in micrometers"
+    },
+    "image_dimensions": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "description": "Image width in pixels"
+        },
+        "height": {
+          "type": "integer",
+          "description": "Image height in pixels"
+        },
+        "channels": {
+          "type": "integer",
+          "description": "Number of color channels"
+        },
+        "timepoints": {
+          "type": "integer",
+          "description": "Number of time points (for time-lapse)"
+        }
+      }
+    },
+    "fluorescence_channels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "channel_name": {
+            "type": "string",
+            "description": "Name of the fluorescence channel"
+          },
+          "excitation_wavelength": {
+            "type": "number",
+            "description": "Excitation wavelength in nm"
+          },
+          "emission_wavelength": {
+            "type": "number",
+            "description": "Emission wavelength in nm"
+          },
+          "fluorophore": {
+            "type": "string",
+            "description": "Fluorophore or dye used"
+          }
+        }
+      }
+    },
+    "sample_preparation": {
+      "type": "string",
+      "description": "Description of sample preparation method"
+    },
+    "imaging_conditions": {
+      "type": "object",
+      "properties": {
+        "temperature": {
+          "type": "number",
+          "description": "Temperature during imaging (Celsius)"
+        },
+        "humidity": {
+          "type": "number",
+          "description": "Humidity during imaging (%)"
+        },
+        "co2_level": {
+          "type": "number",
+          "description": "CO2 level during imaging (%)"
+        }
+      }
+    },
+    "created_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time when the experiment was created"
+    },
+    "researcher": {
+      "type": "string",
+      "description": "Name of the researcher conducting the experiment"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the experiment"
+    }
+  },
+  "required": [
+    "experiment_template_type",
+    "experiment_identifier_run_id",
+    "experiment_title",
+    "microscope_type",
+    "imaging_modality",
+    "objective_magnification",
+    "created_date"
+  ]
+}
