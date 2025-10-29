@@ -74,7 +74,13 @@ class FolderCreationHandler(FileSystemEventHandler):
         if event.is_directory:
             self._handle_directory_creation(dest_path)
         else:
-            self._handle_file_creation(dest_path)
+            # Prefer dataset-root aware handling for moved files as well
+            dataset_root = self._find_dataset_root(dest_path)
+            if dataset_root is not None and not self._should_ignore_path(dest_path):
+                print(f"Processing moved file in dataset (nested supported): {dest_path}")
+                process_file_with_dirmeta(dest_path, dataset_root)
+            else:
+                self._handle_file_creation(dest_path)
 
     def on_modified(self, event: FileSystemEvent) -> None:
         """Handle file modification events for Phase 5 triggers."""
@@ -88,7 +94,10 @@ class FolderCreationHandler(FileSystemEventHandler):
     def _should_ignore_path(self, path: str) -> bool:
         """Check if a path should be ignored (Git/DVC files, etc.)."""
         # Ignore Git and DVC files/directories
-        if any(part in path for part in [".git", ".dvc", "__pycache__", ".DS_Store"]):
+        if any(part in path for part in [
+            ".git", ".dvc", "__pycache__", ".DS_Store",
+            "node_modules", ".venv", "venv", "env", "dist", "build", ".next"
+        ]):
             return True
 
         # Ignore temporary files created by editors
@@ -228,15 +237,15 @@ class FolderCreationHandler(FileSystemEventHandler):
             print(f"Skipping file creation inside .metadata directory: {file_path}")
             return
 
-        # Check if we're in a dataset folder
-        dataset_metadata_path = os.path.join(
-            dataset_path, ".metadata", "dataset_structural.json"
-        )
-        if os.path.exists(dataset_metadata_path):
-            # Skip metadata files themselves and other ignored files
+        # Try to find the dataset root (supports nested files in subfolders)
+        dataset_root = self._find_dataset_root(file_path)
+
+        if dataset_root is not None:
             if not self._should_ignore_path(file_path):
-                print(f"New file detected in dataset: {file_path}")
-                process_file_with_dirmeta(file_path, dataset_path)
+                print(f"New file detected in dataset (nested supported): {file_path}")
+                process_file_with_dirmeta(file_path, dataset_root)
+            return
+
         else:
             # Check if this might be a dataset folder that needs metadata generation
             parent_dir = os.path.dirname(dataset_path)
@@ -318,6 +327,24 @@ class FolderCreationHandler(FileSystemEventHandler):
                             f"Could not determine project ID for dataset: {dataset_path}"
                         )
 
+    def _find_dataset_root(self, path: str):
+        """Walk up from a file/dir to locate the nearest directory containing a dataset_structural.json.
+
+        Returns the dataset root path or None if not found.
+        """
+        try:
+            current = os.path.abspath(path if os.path.isdir(path) else os.path.dirname(path))
+            while True:
+                struct_path = os.path.join(current, ".metadata", "dataset_structural.json")
+                if os.path.exists(struct_path):
+                    return current
+                parent = os.path.dirname(current)
+                if parent == current:
+                    return None
+                current = parent
+        except Exception:
+            return None
+
     def _handle_file_modification(self, file_path: str) -> None:
         """Handle file modification events for Phase 5 triggers."""
         # Check if this is an experiment contextual metadata file
@@ -372,7 +399,10 @@ class FolderMonitor:
     def _should_ignore_path(self, path: str) -> bool:
         """Check if a path should be ignored (Git/DVC files, etc.)."""
         # Ignore Git and DVC files/directories
-        if any(part in path for part in [".git", ".dvc", "__pycache__", ".DS_Store"]):
+        if any(part in path for part in [
+            ".git", ".dvc", "__pycache__", ".DS_Store",
+            "node_modules", ".venv", "venv", "env", "dist", "build", ".next"
+        ]):
             return True
 
         # Ignore temporary files created by editors
@@ -520,11 +550,17 @@ class FolderMonitor:
             if os.path.exists(
                 os.path.join(root, ".metadata", "dataset_structural.json")
             ):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    if not self._should_ignore_path(file_path):
-                        print(f"Processing existing file: {file_path}")
-                        process_file_with_dirmeta(file_path, root)
+                dataset_root = root
+                for subroot, subdirs, subfiles in os.walk(dataset_root):
+                    # Skip ignored directories (including .metadata) while descending
+                    subdirs[:] = [
+                        d for d in subdirs if not self._should_ignore_path(os.path.join(subroot, d))
+                    ]
+                    for file in subfiles:
+                        file_path = os.path.join(subroot, file)
+                        if not self._should_ignore_path(file_path):
+                            print(f"Processing existing file: {file_path}")
+                            process_file_with_dirmeta(file_path, dataset_root)
 
     def stop_monitoring(self) -> bool:
         """Stop monitoring.
