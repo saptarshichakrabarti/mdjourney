@@ -74,7 +74,8 @@ class APICache {
 // Create axios instance with base configuration
 const apiClient: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
-  timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '10000'),
+  // Increase default timeout to better tolerate cold starts or heavy scans
+  timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '30000'),
   headers: {
     'Content-Type': 'application/json',
   },
@@ -84,6 +85,20 @@ const apiClient: AxiosInstance = axios.create({
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error) => {
+    // Retry GET requests on timeout/aborted up to 2 times with backoff
+    const config = error.config as any;
+    const isTimeout = error.code === 'ECONNABORTED' || error.message?.includes('timeout');
+    const isGet = config?.method?.toLowerCase() === 'get';
+    if (isGet && isTimeout) {
+      config.__retryCount = config.__retryCount || 0;
+      const maxRetries = parseInt(import.meta.env.VITE_API_RETRY_COUNT || '2');
+      if (config.__retryCount < maxRetries) {
+        config.__retryCount += 1;
+        const baseDelay = parseInt(import.meta.env.VITE_API_RETRY_DELAY_MS || '500');
+        const delay = baseDelay * Math.pow(2, config.__retryCount - 1);
+        return new Promise((resolve) => setTimeout(resolve, delay)).then(() => apiClient(config));
+      }
+    }
     // Only log errors that are not expected 404s for missing metadata
     const isExpected404 = error.response?.status === 404 &&
       (error.config?.url?.includes('/metadata/experiment_contextual') ||
@@ -138,7 +153,8 @@ export class APIService {
     }
 
     console.log('Cache miss: projects, fetching from API');
-    const response = await apiClient.get(API_ENDPOINTS.PROJECTS);
+    // Allow a higher timeout for initial project load
+    const response = await apiClient.get(API_ENDPOINTS.PROJECTS, { timeout: parseInt(import.meta.env.VITE_API_TIMEOUT_PROJECTS || '45000') });
     const data = response.data;
 
     apiCache.set(cacheKey, data, APIService.CACHE_TTL.PROJECTS);
@@ -154,7 +170,8 @@ export class APIService {
     }
 
     console.log(`Cache miss: datasets for project ${projectId}, fetching from API`);
-    const response = await apiClient.get(API_ENDPOINTS.PROJECT_DATASETS(projectId));
+    // Allow a higher timeout for dataset listing under large projects
+    const response = await apiClient.get(API_ENDPOINTS.PROJECT_DATASETS(projectId), { timeout: parseInt(import.meta.env.VITE_API_TIMEOUT_DATASETS || '45000') });
     const data = response.data;
 
     apiCache.set(cacheKey, data, APIService.CACHE_TTL.DATASETS);
