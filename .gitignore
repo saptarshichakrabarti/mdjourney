@@ -167,4 +167,4 @@ monitor/
 data/
 redis_data/
 mdjourney.egg-info/
-.dvc
+.dvc/
