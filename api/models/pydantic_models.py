@@ -18,8 +18,11 @@ class ProjectSummary(BaseModel):
         None, description="The descriptive title of the project"
     )
     path: str = Field(..., description="Absolute path to the project directory")
+    folder_count: int = Field(
+        ..., description="Total number of folders detected within the project (excluding hidden)"
+    )
     dataset_count: int = Field(
-        ..., description="Number of datasets within the project"
+        ..., description="Number of folders with dataset prefix (e.g., 'd_')"
     )
 
     class Config:

@@ -59,15 +59,16 @@ class ProjectService:
                 None, self._get_project_title, project_path
             )
 
-            # Count datasets (run in thread pool)
-            dataset_count = await loop.run_in_executor(
-                None, self._count_datasets, project_path
+            # Count folders and datasets (run in thread pool)
+            folder_count, dataset_count = await loop.run_in_executor(
+               None, self._count_folders_and_datasets, project_path
             )
 
             project_summary = ProjectSummary(
                 project_id=project_id,
                 project_title=project_title,
                 path=str(project_path.absolute()),
+                folder_count=folder_count,
                 dataset_count=dataset_count,
             )
             logger.debug(f"ProjectService: Adding project: {project_summary}")
@@ -96,16 +97,20 @@ class ProjectService:
                 logger.warning(f"ProjectService: Error reading metadata: {e}")
         return None
 
-    def _count_datasets(self, project_path: Path) -> int:
-        """Count datasets in project directory (sync function for thread pool)."""
+    def _count_folders_and_datasets(self, project_path: Path) -> tuple[int, int]:
+        """Return total non-hidden folder count and d_-prefixed dataset count."""
+        folder_count = 0
         dataset_count = 0
         for subitem in project_path.iterdir():
-            if subitem.is_dir() and (
-                subitem.name.startswith(DATASET_PREFIX)
-                or not subitem.name.startswith(".")
-            ):
+            if not subitem.is_dir():
+                continue
+            # Exclude hidden folders
+            if subitem.name.startswith('.'):
+                continue
+            folder_count += 1
+            if subitem.name.startswith(DATASET_PREFIX):
                 dataset_count += 1
-        return dataset_count
+        return folder_count, dataset_count
 
     @cached(ttl_seconds=120, cache_type="memory")  # Cache dataset list for 2 minutes
     async def get_project_datasets(self, project_id: str) -> List[DatasetSummary]:

@@ -2,18 +2,17 @@
 
 export interface ProjectSummary {
   project_id: string;
-  project_title: string;
+  project_title?: string;
+  path: string;
+  folder_count: number;
   dataset_count: number;
-  created_date: string;
-  last_modified_date: string;
 }
 
 export interface DatasetSummary {
   dataset_id: string;
-  dataset_title: string;
-  status: 'V1_Ingested' | 'V2_Finalized';
-  created_date: string;
-  last_modified_date: string;
+  dataset_title?: string;
+  path: string;
+  metadata_status: 'V0_Initial' | 'V1_Ingested' | 'V2_Finalized';
 }
 
 export interface SchemaInfo {

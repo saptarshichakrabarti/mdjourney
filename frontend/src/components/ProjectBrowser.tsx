@@ -106,8 +106,8 @@ const ProjectBrowser: React.FC = () => {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
+  const getStatusIcon = (metadata_status: string) => {
+    switch (metadata_status) {
       case 'V2_Finalized':
         return <CheckCircle color="success" fontSize="small" />;
       case 'V1_Ingested':
@@ -115,6 +115,16 @@ const ProjectBrowser: React.FC = () => {
       default:
         return <Storage fontSize="small" />;
     }
+  };
+
+  const formatMetadataStatus = (metadata_status: DatasetSummary['metadata_status']) => {
+    if (!metadata_status) return '';
+    const [version, rawLabel] = metadata_status.split('_');
+    const label = (rawLabel || '').toLowerCase();
+    const titleCased = label.charAt(0).toUpperCase() + label.slice(1);
+    const overrides: Record<string, string> = { Finalized: 'Finalised' };
+    const displayLabel = overrides[titleCased] || titleCased;
+    return `${version}: ${displayLabel}`;
   };
 
   if (projectsLoading) {
@@ -161,7 +171,7 @@ const ProjectBrowser: React.FC = () => {
               </ListItemIcon>
               <ListItemText
                 primary={project.project_title}
-                secondary={`${project.dataset_count} datasets`}
+                secondary={`${project.folder_count} folders, ${project.dataset_count} datasets`}
               />
             </ListItemButton>
 
@@ -180,11 +190,11 @@ const ProjectBrowser: React.FC = () => {
                           onClick={() => handleDatasetSelect(dataset.dataset_id)}
                         >
                           <ListItemIcon>
-                            {getStatusIcon(dataset.status)}
+                            {getStatusIcon(dataset.metadata_status)}
                           </ListItemIcon>
                           <ListItemText
                             primary={dataset.dataset_title || dataset.dataset_id.replace('d_', '')}
-                            secondary={dataset.status}
+                            secondary={formatMetadataStatus(dataset.metadata_status)}
                           />
                         </ListItemButton>
                       </Box>
