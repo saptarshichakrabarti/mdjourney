@@ -80,7 +80,7 @@ You can now access the **Web Interface at http://localhost:5173**.
    ```bash
    make up-frontend
    ```
-You can now access the **Web Interface at http://localhost:5173** on your local machine, which is securely connected to your remote backend.
+You can now access the **Web Interface at http://localhost:8080** on your local machine, which is securely connected to your remote backend.
 
 ### 4. Core Workflow: From Data to Metadata
 
