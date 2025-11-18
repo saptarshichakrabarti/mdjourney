@@ -59,15 +59,15 @@ export interface ErrorResponse {
 
 // API Endpoints
 export const API_ENDPOINTS = {
-  HEALTH: '/api/v1/health',
-  RESCAN: '/api/v1/rescan',
-  PROJECTS: '/api/v1/projects',
-  PROJECT_DATASETS: (projectId: string) => `/api/v1/projects/${projectId}/datasets`,
-  CONTEXTUAL_SCHEMAS: '/api/v1/schemas/contextual',
-  SCHEMA: (type: string, id: string) => `/api/v1/schemas/${type}/${id}`,
-  PROJECT_METADATA: (projectId: string, type: string) => `/api/v1/projects/${projectId}/metadata/${type}`,
-  METADATA: (datasetId: string, type: string) => `/api/v1/datasets/${datasetId}/metadata/${type}`,
-  CREATE_CONTEXTUAL: (datasetId: string) => `/api/v1/datasets/${datasetId}/contextual`,
-  FINALIZE_DATASET: (datasetId: string) => `/api/v1/datasets/${datasetId}/finalize`,
-  UPLOAD_FILE: (datasetId: string) => `/api/v1/datasets/${datasetId}/upload`,
+  HEALTH: '/v1/health',
+  RESCAN: '/v1/rescan',
+  PROJECTS: '/v1/projects',
+  PROJECT_DATASETS: (projectId: string) => `/v1/projects/${projectId}/datasets`,
+  CONTEXTUAL_SCHEMAS: '/v1/schemas/contextual',
+  SCHEMA: (type: string, id: string) => `/v1/schemas/${type}/${id}`,
+  PROJECT_METADATA: (projectId: string, type: string) => `/v1/projects/${projectId}/metadata/${type}`,
+  METADATA: (datasetId: string, type: string) => `/v1/datasets/${datasetId}/metadata/${type}`,
+  CREATE_CONTEXTUAL: (datasetId: string) => `/v1/datasets/${datasetId}/contextual`,
+  FINALIZE_DATASET: (datasetId: string) => `/v1/datasets/${datasetId}/finalize`,
+  UPLOAD_FILE: (datasetId: string) => `/v1/datasets/${datasetId}/upload`,
 } as const;

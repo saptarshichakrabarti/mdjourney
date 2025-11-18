@@ -50,7 +50,8 @@ async def reverse_proxy(request: Request):
         raise fastapi.HTTPException(status_code=401, detail="Not authenticated")
 
     client = httpx.AsyncClient()
-    url = f"http://localhost:{backend_port}{request.url.path.replace('/api', '')}"
+    # Forward the path as-is to the backend (backend expects /api/v1/... paths)
+    url = f"http://localhost:{backend_port}{request.url.path}"
 
     # Copy headers, removing 'host' as it's not needed
     headers = dict(request.headers)

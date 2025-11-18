@@ -1,0 +1,163 @@
+# FAIR Metadata System Configuration Template
+# This file serves as the template for all configuration files.
+# When setup_config.py runs, it copies this template and customizes it.
+
+# =============================================================================
+# REQUIRED SETTINGS
+# =============================================================================
+
+# Directory to monitor for file system events
+# This is the main directory where the system will watch for new projects and datasets
+monitor_path: "./data"
+
+# =============================================================================
+# APPLICATION SETTINGS
+# =============================================================================
+
+# Application environment (development, staging, production)
+environment: "development"
+
+# Debug mode (enables detailed logging and error messages)
+debug: false
+
+# Logging configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: null  # Optional log file path (null for console only)
+
+# =============================================================================
+# API SERVER SETTINGS
+# =============================================================================
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  reload: false  # Enable auto-reload for development
+  timeout: 30  # Request timeout in seconds
+  max_request_size: "10MB"  # Maximum request body size
+
+  # CORS settings
+  cors:
+    origins: ["http://localhost:5173", "http://localhost:3000", "http://localhost:8080"]
+    methods: ["GET", "POST", "PUT", "DELETE"]
+    headers: ["Authorization", "Content-Type", "X-Requested-With"]
+    credentials: true
+
+# =============================================================================
+# SECURITY SETTINGS
+# =============================================================================
+
+security:
+  # Authentication settings
+  authentication:
+    enabled: false
+    api_key: "your-secure-api-key-here"
+    token_expiry_hours: 24
+
+  # Rate limiting
+  rate_limiting:
+    enabled: true
+    max_requests: 1000
+    window_seconds: 3600
+
+  # Input validation
+  input_validation:
+    max_id_length: 100
+    allowed_file_extensions: [".jpg", ".jpeg", ".png", ".tiff", ".tif", ".pdf", ".txt", ".csv", ".json", ".xml"]
+    max_file_size: "100MB"
+
+# =============================================================================
+# FILE PROCESSING SETTINGS
+# =============================================================================
+
+file_processing:
+  checksum_algorithm: "sha256"  # sha1, sha256, sha512, md5
+  chunk_size: 4096  # Bytes per chunk for file reading
+  max_file_size: "100MB"
+  supported_formats: ["jpg", "jpeg", "png", "tiff", "tif", "pdf", "txt", "csv", "json", "xml"]
+
+# =============================================================================
+# SCHEMA SETTINGS
+# =============================================================================
+
+schemas:
+  base_path: "packaged_schemas"
+  strict_validation: true
+  allow_missing_schemas: false
+
+  # Custom schema directory path (optional)
+  custom_path: null  # "./custom_schemas"
+
+  # Override default schema paths (usually not needed)
+  path_overrides: {}
+
+# =============================================================================
+# VERSION CONTROL SETTINGS
+# =============================================================================
+
+version_control:
+  git:
+    enabled: true
+    commit_message_prefix: "FAIR Metadata:"
+    author_name: "FAIR Metadata System"
+    author_email: "metadata@example.com"
+
+  dvc:
+    enabled: true
+    remote: "local"
+    cache_dir: "./.dvc/cache"
+
+# =============================================================================
+# MONITOR SETTINGS
+# =============================================================================
+
+monitor:
+  recursive: true  # Monitor subdirectories recursively
+  ignore_patterns: [".git", ".dvc", "__pycache__", ".DS_Store", "*.tmp", "*.log"]
+  scan_interval_seconds: 30  # How often to scan for changes
+
+# =============================================================================
+# DATABASE SETTINGS (if using)
+# =============================================================================
+
+database:
+  url: "sqlite:///./data/metadata.db"
+  pool_size: 5
+  max_overflow: 10
+
+# =============================================================================
+# REDIS SETTINGS (for caching and rate limiting)
+# =============================================================================
+
+redis:
+  host: "localhost"
+  port: 6379
+  db: 0
+  password: null
+  max_connections: 10
+
+# =============================================================================
+# FRONTEND SETTINGS
+# =============================================================================
+
+frontend:
+  api_base_url: "http://localhost:8000"
+  timeout: 10000  # API request timeout in milliseconds
+
+# =============================================================================
+# REMINDER SERVICE CONFIGURATION (for future use)
+# =============================================================================
+
+reminders:
+  enabled: false
+  schedule_interval_hours: 24
+
+  notification:
+    channel: "console"  # console, slack, email
+    slack_webhook_url: null
+    email:
+      smtp_server: null
+      smtp_port: 587
+      username: null
+      password: null

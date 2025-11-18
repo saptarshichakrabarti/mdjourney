@@ -35,7 +35,7 @@ const LoginPage: React.FC = () => {
         const config = yaml.load(content);
 
         // The gateway expects a JSON object, js-yaml provides this.
-        await apiClient.post('/api/session/start', config);
+        await apiClient.post('/session/start', config);
 
         login();
         navigate('/');

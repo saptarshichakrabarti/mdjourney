@@ -2,10 +2,10 @@
 
 # Directory to monitor for new or modified files.
 # Use a relative path for easy local testing.
-watchDirectory: './test-data/files-to-watch'
+watchDirectory: '/Users/u0139314/CodeDump/sandbox/monitor/data'
 
 # Directory containing custom Jinja2 templates for rendering.
-templateDirectory: './test-data/templates'
+templateDirectory: '/Users/u0139314/CodeDump/sandbox/mdjourney/packaged_schemas'
 
 # A list of glob patterns to determine which files to monitor.
 # This is highly flexible.
@@ -13,9 +13,3 @@ templateDirectory: './test-data/templates'
 # Example 2: Monitor only markdown and text files: ['*.md', '*.txt']
 watchPatterns:
   - '*'
-
-# A simple key-value schema for expected metadata.
-metadataSchema:
-  author: string
-  version: number
-  status: ['draft', 'published', 'archived']

@@ -66,17 +66,17 @@ logger = logging.getLogger(__name__)
 # --- SINGLE POINT OF TRUTH FOR CONFIGURATION ---
 # This code runs exactly ONCE when the API server starts up.
 # It finds and loads the .fair_meta_config.yaml file into the global state.
+# Note: If running via gateway (with --config-file), this will be overridden in load_configuration()
 logger.info("--- API Server Starting Up: Initializing Configuration ---")
 config_file = find_config_file()
 if config_file:
     logger.info(f"Found configuration file: {config_file}")
     if not initialize_config(str(config_file)):
-        logger.fatal("Could not initialize configuration from file. Exiting.")
-        sys.exit(1)  # Fail fast if config is bad
-    logger.info("Configuration loaded successfully.")
+        logger.warning("Could not initialize configuration from file. Will try command-line config if provided.")
+        # Don't exit here - allow command-line config to be used
 else:
-    logger.fatal("No .fair_meta_config.yaml file found. Exiting.")
-    sys.exit(1)  # Fail fast if no config is found
+    logger.info("No .fair_meta_config.yaml file found. Will use command-line config if provided.")
+    # Don't exit here - allow command-line config to be used
 # -----------------------------------------------
 
 # Initialize FastAPI app
@@ -726,11 +726,22 @@ async def internal_error_handler(request: Request, exc: Exception) -> JSONRespon
 
 
 def load_configuration(config_path: str) -> dict:
-    """Loads configuration from a JSON file."""
+    """
+    Loads configuration from a JSON or YAML file.
+    This function is used by the gateway to pass session-specific configs.
+    """
     print(f"INFO: Backend loading configuration from {config_path}")
     try:
-        with open(config_path, 'r') as f:
-            config = json.load(f)
+        # Use ConfigManager to load config (supports both JSON and YAML)
+        from app.core.config_manager import ConfigManager
+        config_manager = ConfigManager(config_path)
+        config = config_manager.load_config()
+
+        # Initialize global config state
+        from app.core.config import initialize_config
+        if not initialize_config(config_path):
+            raise RuntimeError("Failed to initialize configuration")
+
         return config
     except Exception as e:
         print(f"ERROR: Backend failed to load config from {config_path}: {e}")
@@ -741,14 +752,15 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="MDJourney Backend Service")
     parser.add_argument("--port", type=int, required=True, help="Port to bind the service to.")
-    parser.add_argument("--config-file", type=str, required=True, help="Path to the session's JSON configuration file.")
+    parser.add_argument("--config-file", type=str, required=True, help="Path to the session's configuration file (JSON or YAML).")
 
     args = parser.parse_args()
     config = load_configuration(args.config_file)
 
     # Validation Step: Log keys from the config to prove it was loaded correctly.
-    watch_directory = config.get("watchDirectory")
-    watch_patterns = config.get("watchPatterns", []) # Default to empty list
+    # ConfigManager normalizes keys, so use the normalized key
+    watch_directory = config.get("monitor_path") or config.get("watchDirectory")
+    watch_patterns = config.get("watch_patterns") or config.get("watchPatterns", [])
     print(f"INFO: Backend started on port {args.port}. Watching directory: '{watch_directory}'")
     print(f"INFO: Applying watch patterns: {watch_patterns}")
 
