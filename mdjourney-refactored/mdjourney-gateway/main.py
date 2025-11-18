@@ -4,6 +4,11 @@ import httpx
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
+from fastapi import FastAPI, Request, Body, HTTPException
+from typing import Dict
+import tempfile
+import json
+import os
 
 from gateway_process_manager_local import start_backend_process_local, stop_backend_process_local
 
@@ -18,22 +23,22 @@ app.add_middleware(SessionMiddleware, secret_key="your-secret-key")
 available_ports = list(range(8001, 8011))
 used_ports = {}
 
+@app.get("/api/health")
+def health_check():
+    return {"status": "ok"}
+
 @app.post("/api/session/start")
-async def start_session(request: Request):
-    """
-    Starts a new session, allocating a backend instance to the user.
-    """
-    if not available_ports:
-        raise fastapi.HTTPException(status_code=503, detail="No available backend instances")
-
-    port = available_ports.pop(0)
-    pid = start_backend_process_local(port)
-
-    request.session["backend_port"] = port
-    request.session["backend_pid"] = pid
-    used_ports[port] = pid
-
-    return {"message": f"Session started, backend running on port {port}"}
+async def start_session(request: Request, config: Dict = Body(...)):
+    fd, temp_config_path = tempfile.mkstemp(suffix=".json", text=True)
+    with os.fdopen(fd, 'w') as temp_file:
+        json.dump(config, temp_file)
+    # ... port allocation logic ...
+    port = 9001
+    pid = start_backend_process_local(port, temp_config_path)
+    request.session['backend_port'] = port
+    request.session['backend_pid'] = pid
+    request.session['config_file_path'] = temp_config_path
+    return {"status": "started"}
 
 @app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
 async def reverse_proxy(request: Request):

@@ -6,6 +6,7 @@ FastAPI application implementing the metadata enrichment API.
 import logging
 import sys
 import os
+import json
 from datetime import datetime
 from pathlib import Path as PathLib
 from typing import Any, Dict, List, Optional, Union
@@ -724,12 +725,31 @@ async def internal_error_handler(request: Request, exc: Exception) -> JSONRespon
     )
 
 
+def load_configuration(config_path: str) -> dict:
+    """Loads configuration from a JSON file."""
+    print(f"INFO: Backend loading configuration from {config_path}")
+    try:
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+        return config
+    except Exception as e:
+        print(f"ERROR: Backend failed to load config from {config_path}: {e}")
+        raise
+
 if __name__ == "__main__":
     import uvicorn
     import argparse
+    parser = argparse.ArgumentParser(description="MDJourney Backend Service")
+    parser.add_argument("--port", type=int, required=True, help="Port to bind the service to.")
+    parser.add_argument("--config-file", type=str, required=True, help="Path to the session's JSON configuration file.")
 
-    parser = argparse.ArgumentParser(description="Run the FAIR Metadata Enrichment API")
-    parser.add_argument("--port", type=int, default=8000, help="Port to run the API on")
     args = parser.parse_args()
+    config = load_configuration(args.config_file)
 
-    uvicorn.run(app, host="0.0.0.0", port=args.port)
+    # Validation Step: Log keys from the config to prove it was loaded correctly.
+    watch_directory = config.get("watchDirectory")
+    watch_patterns = config.get("watchPatterns", []) # Default to empty list
+    print(f"INFO: Backend started on port {args.port}. Watching directory: '{watch_directory}'")
+    print(f"INFO: Applying watch patterns: {watch_patterns}")
+
+    uvicorn.run(app, host="127.0.0.1", port=args.port)
