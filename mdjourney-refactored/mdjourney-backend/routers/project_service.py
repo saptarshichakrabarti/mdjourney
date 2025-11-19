@@ -9,7 +9,7 @@ import logging
 from pathlib import Path
 from typing import Any, List, Optional
 
-from api.models.pydantic_models import DatasetSummary, ProjectSummary
+from models.pydantic_models import DatasetSummary, ProjectSummary
 from app.core.config import DATASET_PREFIX, METADATA_SUBDIR, PROJECT_PREFIX, get_monitor_path
 from app.core.cache import cached, get_project_cache
 from app.services.metadata_generator import get_metadata_generator

@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from api.models.pydantic_models import (
+from models.pydantic_models import (
     ContextualTemplatePayload,
     FinalizePayload,
     MetadataFile,

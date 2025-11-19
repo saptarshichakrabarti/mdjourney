@@ -16,12 +16,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer
 
-from api.dependencies import (
+from dependencies import (
     get_metadata_service,
     get_project_service,
     get_schema_service,
 )
-from api.models.pydantic_models import (
+from models.pydantic_models import (
     APIResponse,
     ContextualTemplatePayload,
     DatasetSummary,
@@ -33,7 +33,7 @@ from api.models.pydantic_models import (
     ProjectSummary,
     SchemaInfo,
 )
-from api.routers.services import MetadataService, ProjectService, SchemaService
+from routers.services import MetadataService, ProjectService, SchemaService
 from app.core.config import find_config_file, initialize_config
 from app.core.exceptions import (
     MDJourneyError,
@@ -498,8 +498,8 @@ async def _add_file_to_metadata(
 ) -> None:
     """Add uploaded file information to the dataset's structural metadata."""
     try:
-        from api.routers.services import MetadataService
-        from api.dependencies import get_metadata_service
+        from routers.services import MetadataService
+        from dependencies import get_metadata_service
 
         # Get metadata service
         metadata_service = get_metadata_service()
@@ -536,7 +536,7 @@ async def _add_file_to_metadata(
         current_content["file_descriptions"].append(file_description)
 
         # Update metadata
-        from api.models.pydantic_models import MetadataUpdatePayload
+        from models.pydantic_models import MetadataUpdatePayload
         payload = MetadataUpdatePayload(content=current_content)
         metadata_service.update_metadata(dataset_id, "dataset_structural", payload)
 
@@ -758,10 +758,11 @@ if __name__ == "__main__":
     config = load_configuration(args.config_file)
 
     # Validation Step: Log keys from the config to prove it was loaded correctly.
-    # ConfigManager normalizes keys, so use the normalized key
-    watch_directory = config.get("monitor_path") or config.get("watchDirectory")
-    watch_patterns = config.get("watch_patterns") or config.get("watchPatterns", [])
-    print(f"INFO: Backend started on port {args.port}. Watching directory: '{watch_directory}'")
-    print(f"INFO: Applying watch patterns: {watch_patterns}")
+    # ConfigManager normalizes keys from gateway format (camelCase) to internal format (snake_case)
+    # After normalization, all configs use snake_case matching the template format
+    monitor_path = config.get("monitor_path")
+    if not monitor_path:
+        print(f"WARNING: 'monitor_path' not found in config. Available keys: {list(config.keys())}")
+    print(f"INFO: Backend started on port {args.port}. Monitor path: '{monitor_path}'")
 
     uvicorn.run(app, host="127.0.0.1", port=args.port)

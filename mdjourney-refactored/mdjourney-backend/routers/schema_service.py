@@ -6,7 +6,7 @@ Handles schema-related business logic.
 import logging
 from typing import Any, Dict, List, Optional
 
-from api.models.pydantic_models import SchemaInfo
+from models.pydantic_models import SchemaInfo
 from app.core.cache import get_schema_cache
 from app.core.config import get_monitor_path
 from app.services.async_schema_manager import get_async_schema_manager

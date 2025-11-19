@@ -386,11 +386,15 @@ class SchemaManager:
         Returns:
             The loaded schema dictionary, or None if not found
         """
+        # Handle 'system_default' by falling back to base experiment contextual schema
+        if template_type == "system_default":
+            return self.get_experiment_contextual_schema()
+
         template_path = f"contextual/{template_type}.json"
         schema_path = self.resolve_schema_path(template_path)
 
         if not schema_path.exists():
-            print(f"Contextual template schema not found: {schema_path}")
+            logger.debug(f"Contextual template schema not found: {schema_path}, falling back to base schema")
             return None
 
         return self.load_schema(schema_path)

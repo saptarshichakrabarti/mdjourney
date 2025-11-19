@@ -6,7 +6,7 @@ Provides factory functions for creating service instances using FastAPI's depend
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from api.routers.services import ProjectService, SchemaService, MetadataService
+    from routers.services import ProjectService, SchemaService, MetadataService
 from app.core.config import find_config_file, get_monitor_path, initialize_config
 from app.monitors.folder_monitor import FolderMonitor
 from app.services.file_processor import FileProcessor
@@ -67,7 +67,7 @@ def get_folder_monitor() -> FolderMonitor:
 
 def get_project_service() -> "ProjectService":
     """Dependency provider for ProjectService."""
-    from api.routers.services import ProjectService
+    from routers.services import ProjectService
 
     metadata_generator = get_metadata_generator()
     return ProjectService(metadata_generator=metadata_generator)
@@ -75,7 +75,7 @@ def get_project_service() -> "ProjectService":
 
 def get_schema_service() -> "SchemaService":
     """Dependency provider for SchemaService."""
-    from api.routers.services import SchemaService
+    from routers.services import SchemaService
 
     schema_manager = get_schema_manager()
     return SchemaService(schema_manager=schema_manager)
@@ -83,7 +83,7 @@ def get_schema_service() -> "SchemaService":
 
 def get_metadata_service() -> "MetadataService":
     """Dependency provider for MetadataService."""
-    from api.routers.services import MetadataService
+    from routers.services import MetadataService
 
     schema_manager = get_schema_manager()
     metadata_generator = get_metadata_generator()

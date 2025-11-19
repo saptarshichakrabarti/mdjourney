@@ -1,0 +1,119 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./mdjourney-gateway:/app
+    environment:
+      - MDJOURNEY_ENV=development
+      - LOG_LEVEL=DEBUG
+      - GATEWAY_HOST=0.0.0.0
+      - GATEWAY_PORT=8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/monitor
+      - ./mdjourney-backend/packaged_schemas:/app/packaged_schemas
+      - ./mdjourney-backend/app:/app/app
+      - ./mdjourney-backend/routers:/app/routers
+      - ./mdjourney-backend/models:/app/models
+      - ./mdjourney-backend/scripts:/app/scripts
+      - ./mdjourney-backend/main.py:/app/main.py
+    environment:
+      - MDJOURNEY_ENV=development
+      - MONITOR_PATH=/app/monitor
+      - LOG_LEVEL=DEBUG
+      - PYTHONPATH=/app
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    depends_on:
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend-dev:
+    build:
+      context: ./mdjourney-webapp
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./mdjourney-webapp:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8080}
+      - VITE_API_TIMEOUT=${VITE_API_TIMEOUT:-30000}
+    depends_on:
+      gateway:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile.monitor
+    volumes:
+      - ./data:/app/monitor
+      - ./mdjourney-backend/packaged_schemas:/app/packaged_schemas
+      - ./mdjourney-backend/app:/app/app
+      - ./mdjourney-backend/scripts:/app/scripts
+    environment:
+      - MDJOURNEY_ENV=development
+      - MONITOR_PATH=/app/monitor
+      - LOG_LEVEL=DEBUG
+      - PYTHONPATH=/app
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "app.monitors.folder_monitor"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  redis_data:

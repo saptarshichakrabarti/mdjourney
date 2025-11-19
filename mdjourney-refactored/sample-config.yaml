@@ -1,15 +1,145 @@
 # Sample configuration for MDJourney development and testing.
+# This file follows the same structure as fair_meta_config_template.yaml
+# and can be used directly by the backend or converted to JSON for the gateway.
 
-# Directory to monitor for new or modified files.
-# Use a relative path for easy local testing.
-watchDirectory: '/Users/u0139314/CodeDump/sandbox/monitor/data'
+# =============================================================================
+# REQUIRED SETTINGS
+# =============================================================================
 
-# Directory containing custom Jinja2 templates for rendering.
-templateDirectory: '/Users/u0139314/CodeDump/sandbox/mdjourney/packaged_schemas'
+# Directory to monitor for file system events
+monitor_path: "./data"
 
-# A list of glob patterns to determine which files to monitor.
-# This is highly flexible.
-# Example 1: Monitor everything: ['*']
-# Example 2: Monitor only markdown and text files: ['*.md', '*.txt']
-watchPatterns:
-  - '*'
+# =============================================================================
+# APPLICATION SETTINGS
+# =============================================================================
+
+environment: "development"
+debug: false
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: null
+
+# =============================================================================
+# API SERVER SETTINGS
+# =============================================================================
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  reload: false
+  timeout: 30
+  max_request_size: "10MB"
+  cors:
+    origins: ["http://localhost:5173", "http://localhost:3000", "http://localhost:8080"]
+    methods: ["GET", "POST", "PUT", "DELETE"]
+    headers: ["Authorization", "Content-Type", "X-Requested-With"]
+    credentials: true
+
+# =============================================================================
+# SECURITY SETTINGS
+# =============================================================================
+
+security:
+  authentication:
+    enabled: false
+    api_key: "your-secure-api-key-here"
+    token_expiry_hours: 24
+  rate_limiting:
+    enabled: true
+    max_requests: 1000
+    window_seconds: 3600
+  input_validation:
+    max_id_length: 100
+    allowed_file_extensions: [".jpg", ".jpeg", ".png", ".tiff", ".tif", ".pdf", ".txt", ".csv", ".json", ".xml"]
+    max_file_size: "100MB"
+
+# =============================================================================
+# FILE PROCESSING SETTINGS
+# =============================================================================
+
+file_processing:
+  checksum_algorithm: "sha256"
+  chunk_size: 4096
+  max_file_size: "100MB"
+  supported_formats: ["jpg", "jpeg", "png", "tiff", "tif", "pdf", "txt", "csv", "json", "xml"]
+
+# =============================================================================
+# SCHEMA SETTINGS
+# =============================================================================
+
+schemas:
+  base_path: "packaged_schemas"
+  strict_validation: true
+  allow_missing_schemas: false
+  custom_path: null
+  path_overrides: {}
+
+# =============================================================================
+# VERSION CONTROL SETTINGS
+# =============================================================================
+
+version_control:
+  git:
+    enabled: true
+    commit_message_prefix: "FAIR Metadata:"
+    author_name: "FAIR Metadata System"
+    author_email: "metadata@example.com"
+  dvc:
+    enabled: true
+    remote: "local"
+    cache_dir: "./.dvc/cache"
+
+# =============================================================================
+# MONITOR SETTINGS
+# =============================================================================
+
+monitor:
+  recursive: true
+  ignore_patterns: [".git", ".dvc", "__pycache__", ".DS_Store", "*.tmp", "*.log"]
+  scan_interval_seconds: 30
+
+# =============================================================================
+# DATABASE SETTINGS
+# =============================================================================
+
+database:
+  url: "sqlite:///./data/metadata.db"
+  pool_size: 5
+  max_overflow: 10
+
+# =============================================================================
+# REDIS SETTINGS
+# =============================================================================
+
+redis:
+  host: "localhost"
+  port: 6379
+  db: 0
+  password: null
+  max_connections: 10
+
+# =============================================================================
+# FRONTEND SETTINGS
+# =============================================================================
+
+frontend:
+  api_base_url: "http://localhost:8000"
+  timeout: 10000
+
+# =============================================================================
+# REMINDER SERVICE CONFIGURATION
+# =============================================================================
+
+reminders:
+  enabled: false
+  schedule_interval_hours: 24
+  notification:
+    channel: "console"
+    slack_webhook_url: null
+    email:
+      smtp_server: null
+      smtp_port: 587
+      username: null
+      password: null
