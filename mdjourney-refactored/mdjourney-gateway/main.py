@@ -4,18 +4,25 @@ import httpx
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
-from fastapi import FastAPI, Request, Body, HTTPException
+from fastapi import FastAPI, Request, Body, HTTPException, Depends
 from typing import Dict
 import tempfile
 import json
 import os
 
 from gateway_process_manager_local import start_backend_process_local, stop_backend_process_local
+from auth import auth, dependencies
+from users import router as users_router
+from auth.models import User
 
 app = fastapi.FastAPI()
 
 # Add session middleware
 app.add_middleware(SessionMiddleware, secret_key="your-secret-key")
+
+# Include routers
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(users_router, prefix="/users", tags=["users"])
 
 # In-memory store for available ports
 # In a real-world scenario, you'd use a more robust method
@@ -24,11 +31,11 @@ available_ports = list(range(8001, 8011))
 used_ports = {}
 
 @app.get("/api/health")
-def health_check():
+def health_check(current_user: User = Depends(dependencies.get_current_active_user)):
     return {"status": "ok"}
 
 @app.post("/api/session/start")
-async def start_session(request: Request, config: Dict = Body(...)):
+async def start_session(request: Request, config: Dict = Body(...), current_user: User = Depends(dependencies.get_current_active_user)):
     fd, temp_config_path = tempfile.mkstemp(suffix=".json", text=True)
     with os.fdopen(fd, 'w') as temp_file:
         json.dump(config, temp_file)
@@ -41,7 +48,7 @@ async def start_session(request: Request, config: Dict = Body(...)):
     return {"status": "started"}
 
 @app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
-async def reverse_proxy(request: Request):
+async def reverse_proxy(request: Request, current_user: User = Depends(dependencies.get_current_active_user)):
     """
     Reverse proxies all other /api requests to the user's allocated backend.
     """

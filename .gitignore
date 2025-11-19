@@ -168,3 +168,4 @@ data/
 redis_data/
 mdjourney.egg-info/
 .dvc/
+\n# Auth data\nauth/data/*

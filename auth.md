@@ -195,3 +195,53 @@
 * [ ] Confirm the team understands which steps change for production (e.g., Vault/KMS for keys, TLS, Redis cache, full audit hash-chains).
 
 ---
+
+## API Documentation
+
+This section documents the API endpoints for the authentication system.
+
+### Create User
+
+* **URL:** `/users/`
+* **Method:** `POST`
+* **Body:**
+
+```json
+{
+  "username": "string",
+  "password": "string",
+  "email": "user@example.com",
+  "full_name": "string",
+  "disabled": false
+}
+```
+
+* **Response:**
+
+```json
+{
+  "username": "string",
+  "email": "user@example.com",
+  "full_name": "string",
+  "disabled": false
+}
+```
+
+### Login for Access Token
+
+* **URL:** `/auth/token`
+* **Method:** `POST`
+* **Body:**
+
+```bash
+username=string&password=string
+```
+
+* **Response:**
+
+```json
+{
+  "access_token": "string",
+  "token_type": "bearer"
+}
+```
